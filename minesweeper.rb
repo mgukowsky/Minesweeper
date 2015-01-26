@@ -74,22 +74,35 @@ class Board
     DIRECTIONS.each do |direction|
       x_diff = direction[0]
       y_diff = direction[1]
-      next unless x+x_diff.between(-8,8)
-      next unless y+y_diff.between(-8,8)
+      next unless (x+x_diff).between?(-8,8)
+      next unless (y+y_diff).between?(-8,8)
       neighbor = self[x+x_diff,y+y_diff]
       if neighbor.has_bomb
         neighbor_bombs += 1
       end
     end
-
     neighbor_bombs
-
   end
 
+  def neighbor_reveal_count(x,y)
+    neighbor_revealed = 0
+    DIRECTIONS.each do |direction|
+      x_diff = direction[0]
+      y_diff = direction[1]
+      next unless (x+x_diff).between?(-8,8)
+      next unless (y+y_diff).between?(-8,8)
+      neighbor = self[x+x_diff,y+y_diff]
+      if neighbor.revealed
+        neighbor_revealed += 1
+      end
+    end
+    neighbor_revealed
+  end
 end
 
 
 class Minesweeper
+  attr_accessor :board
 
   def initialize
     @board = Board.new
@@ -97,25 +110,57 @@ class Minesweeper
   end
 
   def display
-    @board.tiles.each do |row|
+    @board.tiles.each_with_index do |row, y|
       output_string = ""
-
+      row.each_with_index do |tile, x|
+          output_string += " #{get_symbol(x,y)}"
+      end
+      puts output_string.strip
     end
 
+  end
+
+  def get_input
+    puts "What X coordinate do you want?"
+    x = gets.chomp.to_i
+    puts "What Y coordinate do you want?"
+    y = gets.chomp.to_i
+    puts "Enter R for reveal or F for flag."
+    move_action = gets.chomp
+
+    [x, y, move_action]
+  end
+
+  def update_board(input)
+    x = input.shift
+    y = input.shift
+    action = input.shift
+
+    if action == 'R'
+      @board.revealed(x, y)
+    else
+      @board.flagged(x, y)
+    end
   end
 
 
   def get_symbol(x,y)
     temp_tile = @board[x,y]
     bomb_count = @board.neighbor_bomb_count(x,y)
-    if temp_tile.revealed
+    if temp_tile.revealed && temp_tile.has_bomb
+      return "B"
+
+    elsif temp_tile.revealed
       return "_"
+
     elsif temp_tile.flagged
       return "F"
-    elsif bomb_count > 0
+
+    elsif bomb_count > 0 &&
+      @board.neighbor_reveal_count(x, y) > 0
+
       return bomb_count.to_s
-    elsif temp_tile.revealed && temp_tile.has_bomb
-      return "B"
+
     else
       return "*"
     end
