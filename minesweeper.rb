@@ -38,24 +38,6 @@ class Board
     end
   end
 
-  def seed_bombs
-    bomb_count = 0
-    #debugger
-    while bomb_count < 10
-      x = (0..8).to_a.shuffle[0]
-      y = (0..8).to_a.shuffle[0]
-      p [x,y]
-     current_tile = self[x,y]
-     unless current_tile.has_bomb
-        current_tile.has_bomb = true
-
-        puts "bomb"
-        bomb_count += 1
-
-
-      end
-    end
-  end
 
   def [] (x,y)
     self.tiles[x][y]
@@ -117,7 +99,7 @@ class Minesweeper
   def initialize
     @board = Board.new
     @done = false
-    @won = fasle
+    @won = false
     @bomb_locations = []
     @flag_locations = []
 
@@ -128,13 +110,15 @@ class Minesweeper
     puts "Seeding bombs..."
     seed_bombs
 
+
     until @done
+      display
       input = get_input
       update_board(input)
-      display
-
-      if @bomb_locations.sort == @flag_locations.sort
-        done = true
+      p @flag_locations.sort
+      p @bomb_locations.sort
+      if @bomb_locations.sort == @flag_locations.sort && all_clear?
+        @done = true
         @won = true
       end
     end
@@ -153,7 +137,7 @@ class Minesweeper
       x = (0..8).to_a.shuffle[0]
       y = (0..8).to_a.shuffle[0]
       p [x,y]
-      current_tile = self[x,y]
+      current_tile = @board[x,y]
       unless current_tile.has_bomb
         current_tile.has_bomb = true
         @bomb_locations << [x, y]
@@ -205,7 +189,7 @@ class Minesweeper
       end
     else
       @board.flagged(x, y)
-      @flagged_locations << [x, y]
+      @flag_locations << [x, y]
     end
   end
 
@@ -243,6 +227,16 @@ class Minesweeper
     nil
   end
 
+  def all_clear?
+    @board.tiles.each_with_index do |row, y|
+      row.each_with_index do |tile, x|
+        next if @board[x,y].flagged
+        return false unless @board[x,y].revealed
+      end
+    end
+    true
+  end
+
   def get_symbol(x,y)
     temp_tile = @board[x,y]
     bomb_count = @board.neighbor_bomb_count(x,y)
@@ -264,4 +258,9 @@ class Minesweeper
       return "*"
     end
   end
+end
+
+if __FILE__ == $PROGRAM_NAME
+  m = Minesweeper.new
+  m.run
 end
