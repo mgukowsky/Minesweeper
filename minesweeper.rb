@@ -116,8 +116,57 @@ class Minesweeper
 
   def initialize
     @board = Board.new
+    @done = false
+    @won = fasle
+    @bomb_locations = []
+    @flag_locations = []
 
   end
+
+  def run
+    puts "Welcome to Minesweeper"
+    puts "Seeding bombs..."
+    seed_bombs
+
+    until @done
+      input = get_input
+      update_board(input)
+      display
+
+      if @bomb_locations.sort == @flag_locations.sort
+        done = true
+        @won = true
+      end
+    end
+    if @won
+      puts "CONGRATULATIONS, YOU WIN!!!"
+    else
+      puts "you lose :("
+    end
+    nil
+  end
+
+  def seed_bombs
+    bomb_count = 0
+    #debugger
+    while bomb_count < 10
+      x = (0..8).to_a.shuffle[0]
+      y = (0..8).to_a.shuffle[0]
+      p [x,y]
+      current_tile = self[x,y]
+      unless current_tile.has_bomb
+        current_tile.has_bomb = true
+        @bomb_locations << [x, y]
+
+        puts "bomb"
+        bomb_count += 1
+
+
+      end
+    end
+  end
+
+
 
   def display
     @board.tiles.each_with_index do |row, y|
@@ -127,6 +176,7 @@ class Minesweeper
       end
       puts output_string.strip
     end
+    nil
 
   end
 
@@ -147,17 +197,27 @@ class Minesweeper
     action = input.shift
 
     if action == 'R'
-      @board.revealed(x, y)
       if @board[x,y].has_bomb
         finish_game
+        @done = true
+      else
+        recursive_reveal(x,y)
       end
     else
       @board.flagged(x, y)
+      @flagged_locations << [x, y]
     end
   end
 
   def finish_game
-    #reveals all the spaces and ends the game
+    @board.tiles.each_with_index do |row, y|
+      row.each_with_index do |tile, x|
+        unless @board[x,y].revealed
+          @board[x,y].revealed = true
+        end
+      end
+    end
+    self.display
   end
 
   def recursive_reveal(x,y)
