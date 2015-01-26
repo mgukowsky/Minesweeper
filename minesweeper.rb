@@ -26,6 +26,9 @@ class Board
 
   attr_reader :tiles
 
+  def one_dim
+    @tiles.flatten
+  end
 
   def initialize
     @tiles = []
@@ -52,13 +55,37 @@ class Board
     self[x, y].revealed = true
   end
 
+  def valid_coord(x)
+    x.between?(0,8)
+  end
+
+  def seed_bombs
+    bomb_count = 0
+    #debugger
+    while bomb_count < 10
+      x = (0..8).to_a.shuffle[0]
+      y = (0..8).to_a.shuffle[0]
+      p [x,y]
+      current_tile = self[x,y]
+      unless current_tile.has_bomb
+        current_tile.has_bomb = true
+      #  @bomb_locations << [x, y]
+
+        puts "bomb"
+        bomb_count += 1
+
+
+      end
+    end
+  end
+
   def neighbor_bomb_count(x,y)
     neighbor_bombs = 0
     DIRECTIONS.each do |direction|
-      x_diff = direction[0]
-      y_diff = direction[1]
-      next unless (x+x_diff).between?(0,8)
-      next unless (y+y_diff).between?(0,8)
+      x_diff, y_diff = direction
+
+      next unless valid_coord(x+x_diff)
+      next unless valid_coord(y+y_diff)
       neighbor = self[x+x_diff,y+y_diff]
       if neighbor.has_bomb
         neighbor_bombs += 1
@@ -70,10 +97,9 @@ class Board
   def neighbor_reveal_count(x,y)
     neighbor_revealed = 0
     DIRECTIONS.each do |direction|
-      x_diff = direction[0]
-      y_diff = direction[1]
-      next unless (x+x_diff).between?(0,8)
-      next unless (y+y_diff).between?(0,8)
+      x_diff, y_diff = direction
+      next unless valid_coord(x+x_diff)
+      next unless valid_coord(y+y_diff)
       neighbor = self[x+x_diff,y+y_diff]
       if neighbor.revealed
         neighbor_revealed += 1
@@ -101,8 +127,8 @@ class Minesweeper
     @board = Board.new
     @done = false
     @won = false
-    @bomb_locations = []
-    @flag_locations = []
+  #  @bomb_locations = []
+  #  @flag_locations = []
     @save = false
 
   end
@@ -110,7 +136,7 @@ class Minesweeper
   def run(yaml = nil)
     puts "Welcome to Minesweeper"
     puts "Seeding bombs..."
-    seed_bombs
+    @board.seed_bombs
 
     unless yaml.nil?
       save_state = File.read(yaml)
@@ -124,7 +150,7 @@ class Minesweeper
       update_board(input)
       p @flag_locations.sort
       p @bomb_locations.sort
-      if @bomb_locations.sort == @flag_locations.sort && all_clear?
+      if all_flagged? && all_clear?
         @done = true
         @won = nil
       end
@@ -140,28 +166,6 @@ class Minesweeper
     end
     nil
   end
-
-  def seed_bombs
-    bomb_count = 0
-    #debugger
-    while bomb_count < 10
-      x = (0..8).to_a.shuffle[0]
-      y = (0..8).to_a.shuffle[0]
-      p [x,y]
-      current_tile = @board[x,y]
-      unless current_tile.has_bomb
-        current_tile.has_bomb = true
-        @bomb_locations << [x, y]
-
-        puts "bomb"
-        bomb_count += 1
-
-
-      end
-    end
-  end
-
-
 
   def display
     @board.tiles.each_with_index do |row, y|
@@ -214,11 +218,10 @@ class Minesweeper
   end
 
   def finish_game
-    @board.tiles.each_with_index do |row, y|
-      row.each_with_index do |tile, x|
-        unless @board[x,y].revealed
-          @board[x,y].revealed = true
-        end
+    tiles = @board.one_dim
+    tiles.each do |tile|
+      unless tile.revealed
+          tile.revealed = true
       end
     end
     self.display
@@ -235,12 +238,12 @@ class Minesweeper
       @board[x,y].revealed = true
       return nil
     end
+
     @board[x,y].revealed = true
     DIRECTIONS.each do |direction|
-      x_diff = direction[0]
-      y_diff = direction[1]
-      next unless (x+x_diff).between?(0,8)
-      next unless (y+y_diff).between?(0,8)
+      x_diff, y_diff = direction
+      next unless @board.valid_coord(x+x_diff)
+      next unless @board.valid_coord(y+y_diff)
 
       recursive_reveal(x + x_diff, y + y_diff)
     end
@@ -248,15 +251,30 @@ class Minesweeper
   end
 
   def all_clear?
-    @board.tiles.each_with_index do |row, y|
-      row.each_with_index do |tile, x|
-        next if @board[x,y].flagged
-        return false unless @board[x,y].revealed
+    tiles = @board.one_dim
+    tiles.each do |tile|
+      next if tile.flagged
+      return false unless tile.revealed
       end
     end
     true
   end
 
+  def all_flagged?
+    tiles = @board.one_dim
+    correct_flags = 0
+    tiles.each do |tile|
+        correct_flags += 1 if tile.flagged && tile.has_bomb
+    end
+    if correct_flags >= 10
+       true
+    else
+       false
+    end
+  end
+
+
+  end
   def get_symbol(x,y)
     temp_tile = @board[x,y]
     bomb_count = @board.neighbor_bomb_count(x,y)
