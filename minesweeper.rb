@@ -102,6 +102,16 @@ end
 
 
 class Minesweeper
+
+  DIRECTIONS = [[0, 1],
+  [1, 1],
+  [1, 0],
+  [1, -1],
+  [0, -1],
+  [-1, -1],
+  [-1, 0],
+  [-1, 1]]
+
   attr_accessor :board
 
   def initialize
@@ -151,11 +161,18 @@ class Minesweeper
   end
 
   def recursive_reveal(x,y)
+    # debugger
+
+    if @board[x, y].revealed
+      return nil
+    end
+
     if @board.neighbor_bomb_count(x,y) > 0
       @board[x,y].revealed = true
       return nil
     end
-    @board::DIRECTIONS.each do |direction|
+    @board[x,y].revealed = true
+    DIRECTIONS.each do |direction|
       x_diff = direction[0]
       y_diff = direction[1]
       next unless (x+x_diff).between?(-8,8)
@@ -163,12 +180,7 @@ class Minesweeper
 
       recursive_reveal(x + x_diff, y + y_diff)
     end
-    neighbor_revealed
-    end
-
-    end
-
-
+    nil
   end
 
   def get_symbol(x,y)
