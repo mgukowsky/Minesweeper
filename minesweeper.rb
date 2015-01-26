@@ -3,8 +3,8 @@ require 'byebug'
 class Tile
   attr_accessor :has_bomb, :flagged, :revealed
 
-  def initialize(board)
-    @board = board
+  def initialize()
+  #  @board = board
     @has_bomb = false
     @flagged = false
     @revealed = false
@@ -19,7 +19,7 @@ class Board
   def initialize
     tile_row = []
     9.times do
-      tile_row << Tile.new(self)
+      tile_row << Tile.new
     end
 
     @tiles = []
@@ -46,7 +46,10 @@ class Board
     end
   end
 
+  def [] (x,y)
+    self.tiles[x][y]
 
 
+  end
 
 end
