@@ -74,8 +74,8 @@ class Board
     DIRECTIONS.each do |direction|
       x_diff = direction[0]
       y_diff = direction[1]
-      next unless (x+x_diff).between?(-8,8)
-      next unless (y+y_diff).between?(-8,8)
+      next unless (x+x_diff).between?(0,8)
+      next unless (y+y_diff).between?(0,8)
       neighbor = self[x+x_diff,y+y_diff]
       if neighbor.has_bomb
         neighbor_bombs += 1
@@ -89,8 +89,8 @@ class Board
     DIRECTIONS.each do |direction|
       x_diff = direction[0]
       y_diff = direction[1]
-      next unless (x+x_diff).between?(-8,8)
-      next unless (y+y_diff).between?(-8,8)
+      next unless (x+x_diff).between?(0,8)
+      next unless (y+y_diff).between?(0,8)
       neighbor = self[x+x_diff,y+y_diff]
       if neighbor.revealed
         neighbor_revealed += 1
@@ -175,8 +175,8 @@ class Minesweeper
     DIRECTIONS.each do |direction|
       x_diff = direction[0]
       y_diff = direction[1]
-      next unless (x+x_diff).between?(-8,8)
-      next unless (y+y_diff).between?(-8,8)
+      next unless (x+x_diff).between?(0,8)
+      next unless (y+y_diff).between?(0,8)
 
       recursive_reveal(x + x_diff, y + y_diff)
     end
