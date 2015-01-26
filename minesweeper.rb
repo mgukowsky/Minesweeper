@@ -140,8 +140,7 @@ class Minesweeper
 
     unless yaml.nil?
       save_state = File.read(yaml)
-      previous_state = YAML.load(save_state)
-      @board = previous_state.board
+      @board = YAML.load(save_state)
     end
 
     until @done
@@ -195,7 +194,7 @@ class Minesweeper
     y = input.shift
     action = input.shift
     if action == "Save"
-      saved_game = self.to_yaml
+      saved_game = @board.to_yaml
       File.open("saved_game.txt", "w") do |f|
         f.puts saved_game
 
