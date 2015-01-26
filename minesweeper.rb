@@ -87,3 +87,28 @@ class Board
   end
 
 end
+
+
+class Minesweeper
+
+  def initialize
+    @board = Board.new
+
+  end
+
+  def display
+    @board.tiles.each do |row|
+      output_string = ""
+
+    end
+
+  end
+
+
+  def get_symbol(x,y)
+    temp_tile = @board[x,y]
+    if tile.flagged
+      return "F"
+    elsif tile.
+  end
+end
