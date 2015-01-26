@@ -113,8 +113,11 @@ class Minesweeper
     seed_bombs
 
     unless yaml.nil?
-      @board = YAML.load()
+      save_state = File.read(yaml)
+      previous_state = YAML.load(save_state)
+      @board = previous_state.board
     end
+
     until @done
       display
       input = get_input
@@ -128,7 +131,7 @@ class Minesweeper
     end
     if @save
       puts "Thanks for saving see you next time!"
-      nil
+      return nil
     end
     if @won
       puts "CONGRATULATIONS, YOU WIN!!!"
@@ -191,6 +194,7 @@ class Minesweeper
       saved_game = self.to_yaml
       File.open("saved_game.txt", "w") do |f|
         f.puts saved_game
+
       end
       p saved_game
       @done = true
