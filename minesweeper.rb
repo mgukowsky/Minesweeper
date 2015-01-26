@@ -1,4 +1,5 @@
 require 'byebug'
+require 'yaml'
 
 class Tile
   attr_accessor :has_bomb, :flagged, :revealed
@@ -102,15 +103,18 @@ class Minesweeper
     @won = false
     @bomb_locations = []
     @flag_locations = []
+    @save = false
 
   end
 
-  def run
+  def run(yaml = nil)
     puts "Welcome to Minesweeper"
     puts "Seeding bombs..."
     seed_bombs
 
-
+    unless yaml.nil?
+      @board = YAML.load()
+    end
     until @done
       display
       input = get_input
@@ -119,8 +123,12 @@ class Minesweeper
       p @bomb_locations.sort
       if @bomb_locations.sort == @flag_locations.sort && all_clear?
         @done = true
-        @won = true
+        @won = nil
       end
+    end
+    if @save
+      puts "Thanks for saving see you next time!"
+      nil
     end
     if @won
       puts "CONGRATULATIONS, YOU WIN!!!"
@@ -169,7 +177,7 @@ class Minesweeper
     x = gets.chomp.to_i
     puts "What Y coordinate do you want?"
     y = gets.chomp.to_i
-    puts "Enter R for reveal or F for flag."
+    puts "Enter R for reveal or F for flag.  Enter 'Save' to save the game"
     move_action = gets.chomp
 
     [x, y, move_action]
@@ -179,11 +187,19 @@ class Minesweeper
     x = input.shift
     y = input.shift
     action = input.shift
-
-    if action == 'R'
+    if action == "Save"
+      saved_game = self.to_yaml
+      File.open("saved_game.txt", "w") do |f|
+        f.puts saved_game
+      end
+      p saved_game
+      @done = true
+      @save = true
+    elsif action == 'R'
       if @board[x,y].has_bomb
         finish_game
         @done = true
+        @won = false
       else
         recursive_reveal(x,y)
       end
