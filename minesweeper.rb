@@ -138,11 +138,38 @@ class Minesweeper
 
     if action == 'R'
       @board.revealed(x, y)
+      if @board[x,y].has_bomb
+        finish_game
+      end
     else
       @board.flagged(x, y)
     end
   end
 
+  def finish_game
+    #reveals all the spaces and ends the game
+  end
+
+  def recursive_reveal(x,y)
+    if @board.neighbor_bomb_count(x,y) > 0
+      @board[x,y].revealed = true
+      return nil
+    end
+    @board::DIRECTIONS.each do |direction|
+      x_diff = direction[0]
+      y_diff = direction[1]
+      next unless (x+x_diff).between?(-8,8)
+      next unless (y+y_diff).between?(-8,8)
+
+      recursive_reveal(x + x_diff, y + y_diff)
+    end
+    neighbor_revealed
+    end
+
+    end
+
+
+  end
 
   def get_symbol(x,y)
     temp_tile = @board[x,y]
@@ -150,16 +177,16 @@ class Minesweeper
     if temp_tile.revealed && temp_tile.has_bomb
       return "B"
 
+    elsif bomb_count > 0 && @board[x,y].revealed
+
+      return bomb_count.to_s
+
     elsif temp_tile.revealed
       return "_"
 
     elsif temp_tile.flagged
       return "F"
 
-    elsif bomb_count > 0 &&
-      @board.neighbor_reveal_count(x, y) > 0
-
-      return bomb_count.to_s
 
     else
       return "*"
