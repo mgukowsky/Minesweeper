@@ -16,32 +16,38 @@ end
 class Board
   attr_reader :tiles
 
+
   def initialize
+    @tiles = []
     tile_row = []
     9.times do
-      tile_row << Tile.new
+      tile_row = []
+      9.times do
+        tile_row << Tile.new
+      end
+      @tiles << tile_row
     end
-
-    @tiles = []
-    9.times do
-      @tiles << tile_row.dup
-    end
-
-
   end
+
+
+
+
 
   def seed_bombs
     bomb_count = 0
     #debugger
     while bomb_count < 10
-      current_tile = self.tiles.sample.sample.sample
-      if current_tile.has_bomb
-        next
-      else
+      x = (0..8).to_a.shuffle[0]
+      y = (0..8).to_a.shuffle[0]
+      p [x,y]
+     current_tile = self[x,y]
+     unless current_tile.has_bomb
         current_tile.has_bomb = true
-        puts current_tile
+
+        puts "bomb"
         bomb_count += 1
-        p bomb_count
+
+
       end
     end
   end
