@@ -127,8 +127,6 @@ class Minesweeper
     @board = Board.new
     @done = false
     @won = false
-  #  @bomb_locations = []
-  #  @flag_locations = []
     @save = false
 
   end
@@ -147,8 +145,7 @@ class Minesweeper
       display
       input = get_input
       update_board(input)
-      p @flag_locations.sort
-      p @bomb_locations.sort
+    
       if all_flagged? && all_clear?
         @done = true
         @won = nil
@@ -254,7 +251,6 @@ class Minesweeper
     tiles.each do |tile|
       next if tile.flagged
       return false unless tile.revealed
-      end
     end
     true
   end
@@ -273,7 +269,6 @@ class Minesweeper
   end
 
 
-  end
   def get_symbol(x,y)
     temp_tile = @board[x,y]
     bomb_count = @board.neighbor_bomb_count(x,y)
