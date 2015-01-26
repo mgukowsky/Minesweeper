@@ -107,8 +107,17 @@ class Minesweeper
 
   def get_symbol(x,y)
     temp_tile = @board[x,y]
-    if tile.flagged
+    bomb_count = @board.neighbor_bomb_count(x,y)
+    if temp_tile.revealed
+      return "_"
+    elsif temp_tile.flagged
       return "F"
-    elsif tile.
+    elsif bomb_count > 0
+      return bomb_count.to_s
+    elsif temp_tile.revealed && temp_tile.has_bomb
+      return "B"
+    else
+      return "*"
+    end
   end
 end
