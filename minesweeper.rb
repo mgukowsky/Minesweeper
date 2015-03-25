@@ -9,7 +9,6 @@ class Tile
     @has_bomb = false
     @flagged = false
     @revealed = false
-
   end
 
 end
@@ -65,13 +64,11 @@ class Board
     while bomb_count < 10
       x = (0..8).to_a.shuffle[0]
       y = (0..8).to_a.shuffle[0]
-      p [x,y]
       current_tile = self[x,y]
       unless current_tile.has_bomb
         current_tile.has_bomb = true
       #  @bomb_locations << [x, y]
 
-        puts "bomb"
         bomb_count += 1
 
 
@@ -128,7 +125,7 @@ class Minesweeper
     @done = false
     @won = false
     @save = false
-
+    @flag_locations = []
   end
 
   def run(yaml = nil)
@@ -145,10 +142,14 @@ class Minesweeper
       display
       input = get_input
       update_board(input)
-    
-      if all_flagged? && all_clear?
+
+      if all_clear?
         @done = true
         @won = nil
+      elsif all_flagged?
+        puts "All bombs flagged, "
+        @done = true
+        @won = true
       end
     end
     if @save
@@ -171,17 +172,31 @@ class Minesweeper
       end
       puts output_string.strip
     end
+    puts
     nil
 
   end
 
   def get_input
-    puts "What X coordinate do you want?"
-    x = gets.chomp.to_i
-    puts "What Y coordinate do you want?"
-    y = gets.chomp.to_i
-    puts "Enter R for reveal or F for flag.  Enter 'Save' to save the game"
-    move_action = gets.chomp
+    reprompt = false
+    x, y, move_action = nil
+    loop do
+      puts "I didn't understand, please try again" if reprompt
+      puts "What X coordinate do you want (0-8)?"
+      x = gets.chomp
+      x = x.to_i if x
+      puts "What Y coordinate do you want (0-8)?"
+      y = gets.chomp
+      y = y.to_i if y
+      puts "Enter R for reveal or F for flag.  Enter 'Save' to save the game"
+      move_action = gets.chomp.upcase
+
+      break if ((move_action == "R" ||
+                 move_action == "F" ||
+                 move_action == "SAVE") &&
+                (x.between?(0, 8) && y.between?(0, 8)))
+      reprompt = true
+    end
 
     [x, y, move_action]
   end
